@@ -1,0 +1,583 @@
+s---
+title: "Data Cleaning"
+author: "Steven M. Karceski"
+date: "November 5, 2018"
+output: html_document
+---
+
+```{r setup, message = F, warning = F}
+
+rm(list = ls())
+
+library(tidyverse)
+library(sjPlot)
+library(pander)
+
+data <- read_csv("FINAL_SOC403_AU2018_Survey.csv")
+
+
+
+	
+# this will create a new object with just the UW students
+```
+
+The first chunk of code (above) loads two package libraries that are necessary to run the code. If you haven't already done so, install the packages using the function `install.packages("package_name")`. The second part of the chunck is reading in our survey data with the `read_csv()` function (part of the `tidyverse::` package we loaded before.
+
+The data need to be downloaded from the survey page. You can do this by clicking on the three vertical dots on the Responses page and select "Download responses (.csv)". Save the file to the same folder you saved this file and the code above should work.
+
+As I read in the data ("  `PreliminaryResponseData.csv`") I create an object called `data` with remains in our environment (you should see the object name, the number of observations, and the number of variables).
+
+## Renaming Columns
+
+The columns in the data are named with the literal text of each question. We need to change the names to shorter, but still intutive labels. We also need to create a codebook that matches each survey question to the new names. It should also define each variable we create later on. This code uses the `rename()` function from the `dplyr` package, part of the `tidyverse` library loaded earlier. When creating new column names, avoid using spaces in the names; R handles column names better this way.
+
+```{r rename}
+
+data <- data %>%  # create another data object so that we can easily go back to the original
+    rename("TimeStamp" = "Timestamp",
+           "UW_Undergrad" = "Are you currently enrolled as an undergraduate student in Washington State?",
+           "Employed" = "Are you currently employed (including paid internships)?",
+           "Employed_Multiple" = "Are you currently working more than one job?",
+           "Employed_Part" = "Are you employed full or part time?",
+           "Employed_Self" = "Are you self-employed?",
+           "Job_Sector" = "What job sector do you primarily work in?",
+           "Employed_Campus" = "Are you currently working ON campus or OFF campus?",
+           "Employed_Seattle" = "Do you work within the City of Seattle?",
+           "IW_Notice" = "How many days prior notice do you typically receive regarding your upcoming work schedule?",
+           "IW_On_Call" = "How frequently do you work on-call shifts? (Employees who work on-call are expected to be available during the shift at any time of day or night, usually with short notice, to carry out their working duties)",
+           "IW_Hrs_Compare" = "How do the weekly hours you work compare to hours originally indicated upon hiring?",
+           "IW_Clopening" = "Have you ever worked a \"clopening\" shift? (Clopening is when the employee has to work until closing time on a given day, and then they open on the next day.)",
+           "IW_Control_When" = "How much influence do you have over when you are scheduled to work?",
+           "IW_Control_Amount" = "How much influence do you have over the amount of hours you work?",
+           "IW_Late_Pay" = "Have you ever received a paycheck later than expected date in the last couple of months?",
+           "IW_Lower_Pay" = "Have you ever been paid less than the agreed-upon wage in the last couple of months?",
+           "IW_Overtime" = "Do you get compensated financially for working more than expected (such as bonuses or time and a half for holidays/overtime)?",
+           "IW_Tips" = "Do you receive tips or commission for your job?",
+           "IW_Tips_PCT" = "Approximately what percentage of your earnings are from commissions or tips per month?",
+           "IW_Seasonal" = "Is your job seasonal?",
+           "IW_Contract" = "Do you work under a contract that employs you under a specific time frame?",
+           "IW_Benefits" = "Check all benefits provided by your job. (Don't check any if none apply.)",
+           "IW_Tenure" = "How long do you expect to be working for your current employer?",
+           "IW_Advancement" = "Do you think it's likely you might be promoted/ advance in your current job?",
+           "IW_Decline_Shift" = "When asked to pick up an extra shift, I feel comfortable declining.",
+           "IW_Understanding" = "My manager is understanding of my commitments to school when it comes to setting the schedule.",
+           "IW_Conditions" = "In general, I am satisfied with my current work conditions.",
+           "IW_SSSO" = "Have you heard of the Seattle Secure Scheduling Ordinance?",
+           "F_Income" = "What is your average monthly income?",
+           "F_Resp_Pay" = "Are you individually responsible to pay for the following? (Check all that apply)",
+           "F_Rent" = "Rent",
+           "F_Groceries" = "Groceries",
+           "F_Transit" = "Transportation (Gas, car insurance, bus, etc)",
+           "F_Supplies" = "School supplies (textbook, equipment, etc)",
+           "F_400" = "If you had to come up with $400 to cover an emergency expense, how would you pay for it? (choose your best option)",
+           "F_Loans" = "In the last year, have you used any of the following types of loans? (check all that apply)",
+           "F_Support" = "How much financial support do you generally receive from family, friends, guardians, or relatives?",
+           "F_Sup_Source" = "Do you receive support from: (check all that apply)",
+           "A_School" = "What school are you currently attending?",
+           "A_GPA" = "What is your current cumulative GPA?",
+           "A_Study" = "How long do you spend studying per week (excluding in-class time)?",
+           "A_Class_Attend" = "How often do you attend your classes?",
+           "A_Class_Late" = "How often are you late to class?",
+           "A_Class_Attn" = "In general, are you able to pay attention during the classes you attend?",
+           "A_Time_Off" = "Have you ever taken time off of school to care for someone, for financial reasons, or to work?",
+           "A_Extra" = "Do you participate in any of the following extracurricular activities? (Select all that apply)",
+           "A_Extra_Hrs" = "If applicable, how many hours a week do you spend participating in your extracurricular activities?",
+           "Health" = "How would you rate your general health?",
+           "Overwhelmed" = "I often feel overwhelmed.",
+           "Sat_Life" = "I am generally satisfied with my life.",
+           "Sat_Friends" = "I am satisfied with the amount of time I spend with my friends and family (hanging out, visiting, etc...).",
+           "Sat_Myself" = "I am satisfied with the amount of time I spend on myself (relaxing, hobbies, personal time, etc...).",
+           "Sat_Sleep" = "I am satisfied with the amount of sleep I get.",
+           "Sleep" = "In general, how many hours of sleep do you get per day?",
+           "A_Grade" = "What is your class standing in college?",
+           "Residence" = "Where do you currently reside?",
+           "Reside_With" = "Who do you currently reside with?",
+           "In_State" = "Are you considered an in-state or out-of-state student for tuition purpose?",
+           "Major" = "What is your major? (if you declared; if you have not, what is your intended major. Example: Sociology)",
+           "Race_Ethnicity" = "How would you describe your race/ethnicity? (Please select one that you most identify with)",
+           "Citizen" = "Are you a citizen of the United States?",
+           "Native_Born" = "Were you born in the United States?",
+           "Reside_Seattle" = "Do you currently live within the Seattle city limits?",
+           "Gender" = "What is your gender identity?",
+           "Gender_Trans" = "Do you identify as transgender?",
+           "Sexuality" = "Do you consider yourself to be:",
+           "Marital_Stat" = "What is your marital status?",
+           "Income_Source" = "What is your main source of income (the source that you receive the most support from)?",
+           "Dependents" = "Are there one or more individuals reliant on you for caregiving and/or financial support?",
+           "Parental_Income" = "What is your parent/guardian household income?",
+           "Parental_Edu" = "What is the highest level of education that either of your parents or guardians received?",
+           "Parental_Citizen" = "Are your parent(s)/guardian(s) U.S. citizens?",
+           "Follow_Up" = "Are you interested in participating in a follow up interview regarding insecure work?",
+           "Folow_Up _Email" = "If you answered \"yes\" in the last question, make sure to also include your email below. We will reach out to you to schedule an interview shortly!",
+           "Gift_Card" = "Please leave your email if you interested in entering the drawing of three $25 amazon gift card here.")
+
+write_csv(data, "SurveyData_Renamed.csv")
+
+
+	
+# this will create a new object with just the UW students
+
+```
+
+## Creating Variables
+
+Even after renaming variables, the survey data are not currently in a form that is very useful for us. In order for it to be useful, we need to create variables so we can look at relationships between other variables. For example, the question on how much advance notice respondents get for their schedule can be made into a dichotomous variable (takes one of two values). We can do this by giving the value of 1 to responses that indicate they receive less than two weeks notice and a 0 to all other responses. I will demonstrate this below using the`mutate()` function in the `dplyr` package.
+
+```{r coding}
+
+# the code below creates a new variable (Notice_Less2wk) using the ifelse() function. This is saying, if the response to the
+# Notice variable is 7-13 days OR 0-6 days, then the new variable takes a value of 1. Otherwise it takes a value of zero.
+# ifelse(logical statement, value if True, value if false)
+# for help with using any function in R, type ?function_name() in the console and this will bring up the appropriate help file.
+
+
+NewData <- data %>%
+    mutate(
+        # section 2
+        Student = ifelse(UW_Undergrad != "No", 1, 0),
+        # section 3
+        Employed = ifelse(Employed == "Yes", 1, 0),
+        Employed_one = ifelse(Employed_Multiple == "No", 1, 0),
+        # section 4
+        Employed_full = ifelse(Employed_Part == "Full-time (work on average 35 or more hours per week)", 1, 0),
+        Employed_self = ifelse(Employed_Self == "Yes", 1, 0),
+        # Job_Sector
+        Employed_oncampus = ifelse( Employed_Campus == "ON campus", 1, 0),
+        Seattlework = ifelse(Employed_Seattle == "Yes", 1, 0),
+        # section 5
+        Notice_Less2wk = ifelse(IW_Notice %in% c("7 - 13 days", "0 - 6 days"), 1, 0),
+        Notice_Less1wk = ifelse(IW_Notice == "0 - 6 days", 1, 0),
+        No_oncall = ifelse(IW_On_Call == "Never" , 1, 0),
+        Hours_same = ifelse(IW_Hrs_Compare == "Roughly the same", 1, 0),
+        Clopen = ifelse(IW_Clopening== "Yes", 1, 0),
+        Control_when = ifelse(IW_Control_When == "Complete", 1, 0),
+        Control_hours = ifelse(IW_Control_Amount == "Complete", 1, 0),
+        Latepay = ifelse(IW_Late_Pay == "Yes", 1, 0),
+        Lesspay = ifelse(IW_Lower_Pay == "Yes", 1, 0),
+        Overtime_compensate = ifelse(IW_Overtime == "Yes", 1, 0),
+        Job_Notip = ifelse(IW_Tips == "No", 1, 0),
+        # Only use the response under yes/no question here for tip because we are only interested in whether they
+        # receive tip or not, and those who do represent a really small percentage.
+        Job_seasonal = ifelse(IW_Seasonal == "Yes", 1, 0),
+        Job_contract = ifelse(IW_Contract == "Yes", 1, 0),
+        # Benefit: check all that apply
+        Insurance_ben = ifelse(str_detect(IW_Benefits,"Insurance") == "TRUE", 1, 0),
+        Insurance_ben = ifelse(is.na(Insurance_ben), 0, Insurance_ben),
+        Vacation = ifelse(str_detect(IW_Benefits,"Vacation")== "TRUE", 1, 0),
+        Vacation = ifelse(is.na(Vacation), 0, Vacation),
+        PTO = ifelse(str_detect(IW_Benefits,"PTO") == "TRUE", 1, 0),
+        PTO = ifelse(is.na(PTO), 0, PTO),
+        Work_more_1yr = ifelse(IW_Tenure %in% c("1 - 2 years", "More than 2 years"), 1, 0),
+        Job_promote = ifelse(IW_Advancement == "Yes", 1, 0),
+        Decline_comfy = ifelse(IW_Decline_Shift %in% c("4", "5"), 1, 0),
+        Manager_good = ifelse(IW_Understanding %in% c("4", "5"), 1, 0),
+        Work_satisfy = ifelse(IW_Conditions %in% c("4", "5"), 1, 0),
+        KnowOrdinance = ifelse(IW_SSSO == "Yes", 1, 0),
+        MonthEarnLess999 = ifelse(F_Income == "less than $999", 1, 0),
+        # section 6
+        # Individual responsibility: check all that apply
+        payRent = ifelse(str_detect(F_Resp_Pay,"Rent") == "TRUE", 1, 0),
+        payRent = ifelse(is.na(payRent), 0, payRent),
+        payGrocery = ifelse(str_detect(F_Resp_Pay,"Groceries") == "TRUE", 1, 0),
+        payGrocery = ifelse(is.na(payGrocery), 0, payGrocery),
+        payClothes = ifelse(str_detect(F_Resp_Pay,"Clothes") == "TRUE", 1, 0),
+        payClothes = ifelse(is.na(payClothes), 0, payClothes),
+        payInsurance = ifelse(str_detect(F_Resp_Pay,"Insurance") == "TRUE", 1, 0),
+        payInsurance = ifelse(is.na(payInsurance), 0, payInsurance),
+        payUtility = ifelse(str_detect(F_Resp_Pay,"Utility ") == "TRUE", 1, 0),
+        payUtility  = ifelse(is.na(payUtility), 0, payUtility),
+        payPhonebill = ifelse(str_detect(F_Resp_Pay,"Phone") == "TRUE", 1, 0),
+        payTransport = ifelse(str_detect(F_Resp_Pay,"Transportation") == "TRUE", 1, 0),
+        payTransport = ifelse(is.na(payTransport), 0, payTransport),
+        paySchool = ifelse(str_detect(F_Resp_Pay,"School") == "TRUE", 1, 0),
+        paySchool = ifelse(is.na(paySchool), 0, paySchool),
+        Rent_Nodifficulty = ifelse(F_Rent %in% c("Never", "Rarely"), 1, 0),
+        Grocery_Nodifficulty = ifelse(F_Groceries %in% c("Never", "Rarely"), 1, 0),
+        Transport_Nodifficulty = ifelse(F_Transit %in% c("Never", "Rarely"), 1, 0),
+        School_Nodifficulty = ifelse(F_Supplies %in% c("Never", "Rarely"), 1, 0),
+        Rent_Difficulty = ifelse(F_Rent %in% c("Very Often", "Always"), 1, 0),
+        Grocery_Difficulty = ifelse(F_Groceries %in% c("Very Often", "Always"), 1, 0),
+        Transport_Difficulty = ifelse(F_Transit %in% c("Very Often", "Always"), 1, 0),
+        School_Difficulty = ifelse(F_Supplies %in% c("Very Often", "Always"), 1, 0),
+        Have400 = ifelse(F_400 == "Have it in saving account", 1, 0),
+        DontHave400 = ifelse(F_400 == "I won't be able to come up with $400", 1, 0),
+        DontHave400_2 = ifelse(F_400 %in% c("I won't be able to come up with $400", "Sell something", "Put it on credit card"), 1, 0),
+        # Types of loans: check all that apply
+        paydayLoan = ifelse(str_detect(F_Loans, "Payday") == "TRUE", 1, 0),
+        CreditcardLoan = ifelse(str_detect(F_Loans, "Credit") == "TRUE", 1, 0),
+        CreditcardLoan = ifelse(is.na(CreditcardLoan), 0, CreditcardLoan),
+        ffLoan= ifelse(str_detect(F_Loans, "friends or family") == "TRUE", 1, 0),
+        ffLoan = ifelse(is.na(ffLoan), 0, ffLoan),
+        bankLoan = ifelse(str_detect(F_Loans, "Bank") == "TRUE", 1, 0),
+        mostOrAllsupport = ifelse(F_Support %in% c("All my expenses are covered", "Most"), 1, 0),
+        # Support: check all that apply
+        Scholarship = ifelse(str_detect(F_Sup_Source, "Scholarship") == "TRUE", 1, 0),
+        Grant = ifelse(str_detect(F_Sup_Source, "Grant") == "TRUE", 1, 0),
+        studentLoan = ifelse(str_detect(F_Sup_Source, "Student") == "TRUE", 1, 0),
+        Stipend = ifelse(str_detect(F_Sup_Source, "Stipend") == "TRUE", 1, 0),
+        Fellowship = ifelse(str_detect(F_Sup_Source, "Fellowship") == "TRUE", 1, 0),
+        # section 7
+        School_uw = ifelse(A_School == "University of Washington - Seattle", 1, 0),
+        Insuff_studytime = ifelse(A_Study %in% c("0 to 5", "6 to 10"), 1, 0),
+        Time_off = ifelse(A_Time_Off == "Yes", 1, 0),
+        Less_Extracurriculars = ifelse(A_Extra_Hrs %in% c("0 - 2hours", "3 - 5hours"), 1, 0),
+        Class_freq = ifelse(A_Class_Attend %in% c("4","5"), 1, 0),
+        Late_freq = ifelse(A_Class_Late %in% c("4", "5"), 1, 0),
+        Attn_freq = ifelse(A_Class_Attn %in% c("4", "5"), 1, 0),
+        # Extracurricular activity: check all that apply
+        RSO = ifelse(str_detect(A_Extra, "RSO")== "TRUE", 1, 0),
+        Sport = ifelse(str_detect(A_Extra, "Sports")== "TRUE", 1, 0),
+        Music = ifelse(str_detect(A_Extra, "Music")== "TRUE", 1, 0),
+        Religion = ifelse(str_detect(A_Extra, "Religious")== "TRUE", 1, 0),
+        Volunteer = ifelse(str_detect(A_Extra, "Volunteer")== "TRUE", 1, 0),
+        Internship = ifelse(str_detect(A_Extra, "Internship")== "TRUE", 1, 0),
+        # section 8
+        Healthy = ifelse(Health %in% c("Good", "Excellent"), 1, 0),
+        Overwhelmed = ifelse(Overwhelmed %in% c("4", "5"), 1, 0),
+        Satified_life = ifelse(Sat_Life %in% c("4", "5"), 1, 0),
+        Satisfied_friends = ifelse(Sat_Friends %in% c("4", "5"), 1, 0),
+        Satisfied_myself = ifelse(Sat_Myself %in% c("4", "5"), 1, 0),
+        Satisfied_sleep = ifelse(Sat_Sleep %in% c("4", "5"), 1, 0),
+        Suff_sleep = ifelse(Sleep %in% c("7-8 hours", "9 or more hours"), 1, 0),
+        # No check all that apply
+        # section 9
+        Have_citizenship = ifelse(Citizen == "Yes", 1, 0),
+        US_born = ifelse(Native_Born == "Yes", 1, 0),
+        Reside_seattle = ifelse(Reside_Seattle == "Yes", 1, 0),
+        Rside_noparents = ifelse(Reside_With %in% c("By myself", "With roommates (may include partner", "With partner (no other roommates)"), 1, 0),
+        Instate_tuition = ifelse(In_State == "In-state", 1, 0),
+        Transgender = ifelse(Gender_Trans == "Yes", 1, 0),
+        Straight = ifelse(Sexuality == "Straight", 1, 0),
+        White = ifelse(Race_Ethnicity == "White", 1, 0),
+        Male = ifelse(Gender == "Male", 1, 0),
+        Single = ifelse(Marital_Stat == "Single, never married", 1, 0),
+        Sup_family = ifelse(Income_Source == "Family and/or Friends", 1, 0),
+        No_dependents = ifelse(Dependents == "No", 1, 0),
+        Low_income = ifelse(Parental_Income %in% c("Less than $35,000", "$35,000 to $69,000"), 1, 0),
+        Income_Above_Med = ifelse(Parental_Income %in% c("$70,000 to $150,000", "More than $150,000"), 1, 0),
+        Not_Educated_parents = ifelse(Parental_Edu %in% c("Less than high school", "High school", "Associates / 2-year degree"),
+                                      1, 0),
+        Parent_Bach = ifelse(Parental_Edu %in% c("4-year degree",
+                                                  "Graduate (Master / Ph.D.) or Professional Degree (M.D. / J.D.)"), 1, 0),
+        Parent_Assoc = ifelse(Parental_Edu %in% c("Associates / 2-year degree"), 1, 0),
+        Citizen_parents = ifelse(Parental_Citizen == "Yes", 1, 0),
+        Citizen_Yes = ifelse(Citizen == "Yes", 1, 0),
+        A_GPA = ifelse(A_GPA > 4, NA, A_GPA))
+
+# remove duplicates and non-students:
+NewData <- NewData %>% distinct() %>% filter(Student == 1)
+
+# this will write a new csv file
+write_csv(NewData, "Full_Survey_Data.csv")
+
+NewData %>% group_by(A_School) %>% count()
+
+
+```
+
+
+```{r}
+
+#Western washington data 
+Just_WU_Gender <- NewData %>% 
+    filter(A_School == "Western Washington University") %>%
+    group_by(Gender) %>%
+  summarize(count = n()) %>%
+  pander()
+
+Race <- c("Hispanic", "American Indian or Alaska Native",
+         "Asian", "Black or African American",
+         "Native Hwaiian or Other Pacific Islander",
+         "International", "Unknown", "Two or more", "White")
+
+Percentage <- c("8.8 %", "2.0 %", "10.5 %", "2.6 %", "0.5 %", "1.2 %", "1.5 %", "1.1 %", "71.7 %")
+
+WU <- data.frame(Race,Percentage)
+pander('rmarkdown')
+	
+# this will create a new object with just the UW students
+
+```
+
+### Exploting the associations between our variables
+
+In the next section, I focus on one of our insecure work variables, `Work_satisfy`, and look at associations between it and the demographic/SES variables, as well as several of the outcome variables. The code I have below can be used by each of you to check explore you own assigned variables. Play around with it, don't be afraid to make mistakes, and feel free to email me/post in the slack if you have any questions.
+
+To start, the first bit of code shows how you can easily get a count for each response for a certain variable. Here I do it for race, but it can easily be replicated for other variables by inputting the name of some other variable in place of `Race_Ethnicity`.
+
+*UPDATE: the code now runs a loop that generates a table for each variable grouping included in the list. But the chuncks are set not to run at the moment. If you want to view these tables, select the code within the chunk and run it manually. *
+
+```{r determinants, include = F}
+
+var_list <- c("Race_Ethnicity", "Gender", "Sexuality", "Parental_Edu", "Parental_Income", "Citizen")
+
+for (i in seq_along(var_list)) {
+
+    NewData %>%
+        filter(Employed == 1) %>%
+        group_by_at(vars(one_of(var_list[i]))) %>%
+        summarize(Less_2WK_Notice = mean(Notice_Less2wk),
+                  Clopening = mean(Clopen),
+                  Control_When = mean(Control_when),
+                  Late_Pay = mean(Latepay),
+                  Less_Pay = mean(Lesspay),
+                  Job_Promote = mean(Job_promote),
+                  Decline_Comfy = mean(Decline_comfy),
+                  Manager_Understanding = mean(Manager_good),
+                  Work_Satisfaction = mean(Work_satisfy),
+                  Count = n()) %>%
+        pander()
+
+}
+
+```
+
+### Outcomes
+
+Now let's take a look at how the insecure work varialbe is associated with various variables. What you can do to run this for your own variable is search (ctrl + F) and replace `Work_satisfy` with your variable(s) name.
+
+*UPDATE: the code now runs a loop that generates a table for each variable grouping included in the list. But the chuncks are set not to run at the moment. If you want to view these tables, select the code within the chunk and run it manually. *
+
+```{r outcomes, include = F}
+
+var_list_2 <- c("Notice_Less2wk", "Clopen", "Control_when", "Control_hours", "Latepay", "Lesspay", "Job_promote",
+              "Decline_comfy", "Manager_good", "Work_satisfy")
+
+for (i in seq_along(var_list_2)) {
+
+    NewData %>%
+        filter (Employed == 1) %>%
+        group_by_at(vars(one_of(var_list_2[i]))) %>%
+        summarize(Rent_Difficulty = mean(Rent_Difficulty),
+                  DontHave400 = mean(DontHave400),
+                  Insuff_studytime = mean(Insuff_studytime),
+                  Healthy = mean(Healthy),
+                  Overwhelmed = mean(Overwhelmed),
+                  Satified_life = mean(Satified_life),
+                  Satisfied_sleep = mean(Satisfied_sleep),
+                  A_GPA = mean(A_GPA, na.rm = T),
+                  Count = n()) %>%
+        pander()
+
+}
+
+```
+
+## Logistic Regressions
+
+Let's try some logistic regressions. We will use the `glm()` function, which is part of the `base` R package. We will also use the `sjPlot` package to view the regression output. I want you to play around with a few logistic regressions. Start with running simple models with the variablbes you used for the tables we made in class yesterday.
+
+Note: the one variable we have where it makes sense to run a linear regression is GPA. For this, instead of the glm() function, use the lm() function and leave out the argument `family = "binomial"`. I've included an example in the code below. THis example looks at the relationship between
+
+```{r}
+
+tab_model(glm_1 <- glm(Control_when ~ Parental_Edu,
+              data = NewData %>% filter(Employed == 1),
+              family = "binomial"))
+
+```
+
+This shows that the association between parental education and control over when you work is statistically significant for the group that reported their parents received at most a 2-year college degree (the p-value is below 0.05). When we use categorical variables like Parental_Edu, the model leaves on of the categories out as the reference category. This means the estimates we see are in relation to the one we left out. Therefore, since 4-year degree is left out, we can say that the when compared to parents with at most 4-year degrees, parents with associates degrees have significantly higher odds of reporting control over when they work.
+
+We can also other variables. Below I add Male, and display the models side by side in a table. Notice how the effect odds-ratio of the Associates degree category changes, although only slightly. Also notice how the R squared changed. The R squared tells us how well the model explains the variation in the data.
+
+```{r}
+
+glm_2 <- glm(Control_when ~ Parental_Edu + Male,
+              data = NewData %>% filter(Employed == 1),
+              family = "binomial")
+tab_model(glm_1, glm_2)
+
+```
+
+Lastly, I use a dummy for parents with at most an associates degree instead of the full category. This means the estimated odds-ratio is telling us the effect of an associates degree in relation to all other educational categories. The odds-ratio is different because it is comparing the associates degree category to a different group than before (then 4-year degree, now all other categories). You can see the inclusion of the new variable shows a stronger effect, greater statistical significance (smaller p-value), and a lower R-squared. (To view the table in a browser click on the "show in new window" icon at the top of your Viewer tab.)
+
+```{r}
+
+glm_3 <- glm(Control_when ~ Parent_Assoc + Male,
+              data = NewData %>% filter(Employed == 1),
+              family = "binomial")
+tab_model(glm_1, glm_2, glm_3)
+
+```
+
+Play around with your variables, but throwing all possible variables into the model will reduce the statistical power possible for the associations we find -- simpler is often better.
+
+Remember, the glm() and lm() functions start with the depdendent variable and are followed by indepdnent variables. Like this: dv ~ iv_1 + iv_2. Like we did with the tables, when looking at insecure work characteristics as the DV the indepdnent variables should be variables that we think might influence the likelihood one is exposed to insecure work (like race, gender, SES, etc.). And when the outcomes are our DV, the insecure work variables should be the independent variables.
+
+
+# Relationships of interest:
+
+In this section, I provide code for logisti regressions that can be used to view the focal relationships within our dataset. First, we need to focus in on what relationships we are interested in studying. Our main research questions are 1) What are the determinants of exposure to insecure work? And, 2) What the effects of exposure to insecure work?
+
+## 1) What leads to insecure work?
+
+This is the list of concepts we came up with in class that might influence one's exposure to insecure work:
+
+- Gender
+- Race
+- Parental Edu
+- SES (Parental Income)
+- Citizenship (and Parental citizenship)
+- Sexuality
+- Reside in Seattle
+
+But in order to test the relationship between these characteristics and insecure work, we first need to decide on how we can measure insecure work. We have a number of variables within our dataset that relate to insecure work. Let's start with these:
+
+- Notice (we have two ways of measuring this one - less than one week & less than two weeks)
+- On call
+- Control over hours
+- Hours worked versus indicated
+- Control over when
+- Clopening
+- Late Pay
+- Less Pay
+- Overtime Compensation
+- Job Promote
+- Decline Shift
+
+Let's first take a look at the variables for scheduling notice.
+
+### Scheduling Notice
+
+Below is the code I used in class to look at the relationships between the list of concepts and the two measures of scheduling notic. The way the `glm()` function works, the first variable within the function is the dependent variable, followed by `~` before the indepdent/control variable (strung together with `+`).
+
+The first model uses thte `glm()` function to create an object (`Notice_2wk`) that is later read into the `tab_model()` function from the `sjPlot` package. The "formula" used to create our `glm()` object is this:
+
+    Notice_Less2wk ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight + Transgender
+
+This says Scheduling Notice is a function of Gender, Race, Parental Education, Parental Income, Employment Location, Citizenship, Sexuality, and Transgender status. We use the `filter()` function on the data to limit the sample to only those who are employed (it doesn't make sense to compare students who get insufficient notice of their schedule to people who do not work at all). We also tell the `glm()` function that the dependent variable is dichotmous with the `family = "binomial"` argument. Let's see how it works.
+
+```{r}
+
+Notice_2wk <- glm(Notice_Less2wk ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight +
+                      Transgender,
+                  data = NewData %>% filter(Employed == 1),
+                  family = "binomial")
+
+Notice_1wk <- glm(Notice_Less1wk ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight +
+                      Transgender,
+                  data = NewData %>% filter(Employed == 1),
+                  family = "binomial")
+
+tab_model(Notice_2wk, Notice_1wk)
+
+```
+
+The table shows the output from each of the models. The majority of the coefficients are not statistically significant but across the two models two variables stand out: working within the Seattle City limits and being a citizen. Working in seattle deacreases the odds of having less than two weeks notice regarding work scheduling. Citizens and those who work within Seattle are less likely to report less than one week notice.
+
+### On Call
+
+We can do the same thing quite easily with the other depdendent variables we are interested in. For example, let's do the same thing with the next variable in our list: On Call. Run the code and take a look at the output.
+
+```{r}
+
+No_oncall <- glm(No_oncall ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight +
+                      Transgender,
+                  data = NewData %>% filter(Employed == 1),
+                  family = "binomial")
+tab_model(No_oncall)
+
+```
+
+In this model, we do not see any statistically significant associations. But, take a look at the odds ratios and see if they are still in the direction we might expect. AGain, we cannot say the assocaitions are significant, but the ratios still reflect the average respondent in our sample. On average, within our sample, Whites we less likely to work on-call shifts than the other racial categories. Also, within our sample, on average, working within the city of Seattle also is associated (although not significantly) with lower odds of working on-call shifts.
+
+### Control over hours and hours related to advertised hours
+
+Here I combine models for Control over hours worked with the variable that indicates the hours worked are similar to what was promised by the employer upon hiring.
+
+```{r}
+
+Control_hours <- glm(Control_hours ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight +
+                     Transgender,
+                 data = NewData %>% filter(Employed == 1), family = "binomial")
+
+Hours_same <- glm(Hours_same ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight +
+                         Transgender,
+                     data = NewData %>% filter(Employed == 1), family = "binomial")
+
+tab_model(Control_hours, Hours_same)
+
+```
+
+The table shows working within the City of Seattle limits 1) increases the odds that the repsondent has control over the amount of hours they work, and 2) increases the odds the amount of work given to the respondent is similar to the amount of work indicated upon hiring. This could mean that the secure scheduling ordinance has had an impact (but it could be due to other factors assocaited with living or working in Seattle).
+
+Further, there is a gender difference in the odds of hours worked relative to what was indicated upon hirin: males have much higher odds of having their hours the same as what was indicated. As we discussed in class, this could be due to socialized gender differences that make males more comfortable speaking with managers if the hours realized were different from what they were initially told.
+
+We can also plot the model object with the `plot_model()` function within the `sjPlot` package.
+
+```{r}
+
+plot_model(Hours_same)
+
+# you can also use ggplot functions to modify the plot:
+plot_model(Hours_same) +
+    # this changes the theme - this particular theme removes the gray background and removes grid lines
+    theme_classic() +
+    # adds a vertical line at the value of 1 and colors it gray
+    geom_hline(yintercept = 1, colour = "gray60")
+
+```
+
+Now, I want each of you to to do the same thing for you assigned variable (see email). Once you get the model to work, copy and paste the table (and the plot, if you want) into the "Report Outline/Draft" and describe the associations you see. If you want, in addition to the variables provided in the examples, add others or look at alternative ways of coding our questions.
+
+# 2) What are the effect of insecure work on mental Health?
+
+In this section we will explore the potential outcomes associated with insecure work. Instead of using the insecure work variables as our depdent variable we will now use them as our *indepdent variables*.
+
+### Overwhelmed
+
+I'll provide an example with `Overwhelmed`. I include a set of insecure work variables:
+
+    Notice_Less1wk + Control_when + Control_hours + Job_promote + Clopen + Latepay + Lesspay
+
+
+```{r}
+
+CC_Loan <- glm(CreditcardLoan ~ Notice_Less1wk + Control_when + Control_hours + Job_promote + Clopen + Latepay +
+                Lesspay,
+                   data = NewData, family = "binomial")
+
+CC_Loan_1 <- glm(CreditcardLoan ~ Notice_Less1wk + Control_when + Control_hours + Job_promote + Clopen + Latepay +
+                     Lesspay  + White + Male + Have_citizenship + Straight + Transgender,
+                   data = NewData, family = "binomial")
+
+
+CC_Loan_2 <- glm(CreditcardLoan ~ Notice_Less1wk + Control_when + Control_hours + Job_promote + Clopen + Latepay +
+                     Lesspay +
+                     White + Male + Have_citizenship + Straight + Transgender +
+                     Parent_Bach + Low_income,
+                   data = NewData, family = "binomial")
+
+tab_model(CC_Loan, CC_Loan_1, CC_Loan_2, show.aic = T)
+
+```
+
+Now it's your turn to experiment with your own logistic regressions. Dependent variables are assigned in the email. Good luck!
+
+```{r}
+
+comfy <- glm(Decline_comfy ~ Male + White + Parent_Bach + Low_income + Seattlework + Citizen_Yes + Straight +
+                     Transgender,
+                 data = NewData %>% filter(Employed == 1), family = "binomial")
+tab_model(comfy)
+
+plot_model(comfy)
+plot_model(comfy) +
+theme_classic() +
+    geom_hline(yintercept = 1)
+
+```
+For this, I used comfortable in declining shifts as my dependent variable and other characteristics of the respondents as my independent variable (gender, race, parent's SES, Parents' educational level, Location of work, citizenship, and sexuality). The result shows that Males tend to have higher rate of responding that they are comfortable in declining the shifts. This might be due to the fact that men are known to be more vocal and comfortable stating their opinions? 
+
+```{r}
+
+grocery <- glm(Grocery_Difficulty ~ Notice_Less2wk + Notice_Less1wk + No_oncall + Hours_same + Clopen 
+               + Control_when + Control_hours + Latepay + Lesspay,
+                 data = NewData %>% filter(payGrocery == 1 & Employed == 1), family = "binomial")
+tab_model(grocery)
+
+```
+
+For this section, I used characteristics of Insecure work (Notice less than 2 weeks and 1 week, and no on call shifts, hours same, clopening, control when, control hours, late pay, and less pay) as my independent variable and Grocery difficulty as my dependent variable to show the effects of insecure work on paying grocery. I filtered payrent == 1 and employed == 1 so that the data will only include people who are employed and responsible for paying the grocery. The table shows that people who have received late payment have higher chance of experiencing difficulty in paying grocery as well as those who do not have the same schedule that they were told to have. This shows that insecure work (hours same and late pay) does have effects on difficulties in paying for groceries. 
+
